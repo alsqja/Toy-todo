@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -38,6 +39,19 @@ export const Signup = () => {
 
   const SignupClickHandler = () => {
     // TODO : signup 요청
+    axios
+      .post("http://localhost:4000/auth/signup", {
+        email: values.email,
+        name: values.name,
+        password: values.password,
+      })
+      .then((res) => {
+        alert("회원가입이 완료되었습니다.");
+        navigate("/signin");
+      })
+      .catch((err) => {
+        alert(err.response.data);
+      });
   };
 
   return (

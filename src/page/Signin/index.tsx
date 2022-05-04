@@ -1,15 +1,19 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import theme from "../../styled/theme";
 import { ILoginValues } from "./index.d";
+import axios from "axios";
+import { useSetRecoilState } from "recoil";
+import { userSelector } from "../../store/user";
 
 export const Signin = () => {
   const [values, setValues] = useState<ILoginValues>({
     email: "",
     password: "",
   });
-  const [isRight, setIsRight] = useState(true);
+  const setUserInfo = useSetRecoilState(userSelector);
+  const navigate = useNavigate();
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +30,18 @@ export const Signin = () => {
 
   const LoginClickHandler = () => {
     // TODO : 로그인 요청 보내기
+    axios
+      .post("http://localhost:4000/auth/signin", {
+        email: values.email,
+        password: values.password,
+      })
+      .then((res) => {
+        setUserInfo(res.data);
+        navigate("/");
+      })
+      .catch((err) => {
+        alert(err.response.data);
+      });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -60,9 +76,6 @@ export const Signin = () => {
               name="password"
               onKeyUp={handleKeyPress}
             />
-            <Warning style={isRight ? { display: "none" } : {}}>
-              잘못된 이메일 혹은 비밀번호 입니다.
-            </Warning>
           </InputBox>
         </StyledDiv>
         <ButtonBox>
@@ -114,13 +127,6 @@ const ValueInput = styled.input`
   height: 40px;
   width: 230px;
   padding: 5px;
-`;
-
-const Warning = styled.div`
-  font-family: "IBMPlexSansKR-Light";
-  font-size: smaller;
-  font-weight: bolder;
-  color: red;
 `;
 
 const ButtonBox = styled.div`
