@@ -8,7 +8,7 @@ export const menus = [
     link: "/today",
   },
   {
-    id: "Done",
+    id: "Complete",
     link: "/isdone",
   },
   {

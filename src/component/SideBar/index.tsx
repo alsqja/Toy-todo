@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import theme from "../../styled/theme";
 import { menus } from "./data";
 
 export const SideBar = () => {
-  const [click, setClick] = useState(window.location.pathname);
+  const click = useRef<string>(window.location.pathname);
 
   return (
     <Container>
@@ -15,7 +15,7 @@ export const SideBar = () => {
             <Btn
               key={menu.id}
               style={
-                click === menu.link
+                click.current === menu.link
                   ? { backgroundColor: `${theme.palette.blackLight}` }
                   : {}
               }
@@ -32,6 +32,7 @@ export const SideBar = () => {
 
 const Container = styled.div`
   float: left;
+  position: fixed;
   width: 10%;
   height: calc(100vh - 50px);
   display: flex;
