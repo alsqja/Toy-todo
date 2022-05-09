@@ -1,11 +1,12 @@
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { AddBtn } from "../../component/AddBtn";
 import { CreateTodoModal } from "../../component/CreateTodoModal";
 import { todayMaker } from "../../component/function/time";
+import { PageNation } from "../../component/Pagenation/Pagenation";
 import { SideBar } from "../../component/SideBar";
 import { TodoBox } from "../../component/TodoBox";
 import { userSelector } from "../../store/user";
@@ -14,12 +15,11 @@ import { ITodos } from "../Total/data";
 export const Today = () => {
   const userInfo = useRecoilValue(userSelector);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const isGotAllTodos = useRef(false);
   const [todos, setTodos] = useState<ITodos[]>([]);
   const [reLoad, setReLoad] = useState(false);
-  const page = useRef<number>(0);
+  const [page, setPage] = useState(1);
+  const [pageNum, setPageNum] = useState(0);
 
   const onClose = useCallback(() => {
     setIsOpen(!isOpen);
@@ -34,60 +34,20 @@ export const Today = () => {
       .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
         params: {
           filter: "today",
-          page: page.current,
+          page: page - 1,
           is_done: false,
           expiration_date: new Date(today).getTime().toString(),
         },
       })
       .then((res) => {
         setTodos(res.data.todos);
-        page.current += 1;
+        setPageNum(res.data.pageNum);
       })
       .catch((err) => {
         console.log(err);
       });
     setReLoad(false);
-  }, [navigate, userInfo, reLoad]);
-
-  useEffect(() => {
-    const loadingTodosWhenScroll = () => {
-      const { innerHeight } = window;
-      const { scrollHeight } = document.body;
-      const { scrollTop } = document.documentElement;
-      if (
-        isLoading ||
-        isGotAllTodos.current ||
-        Math.round(scrollTop + innerHeight) <= scrollHeight
-      ) {
-        return;
-      }
-      const today = todayMaker();
-      axios
-        .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
-          params: {
-            filter: "today",
-            page: page.current,
-            is_done: false,
-            expiration_date: new Date(today).getTime().toString(),
-          },
-        })
-        .then((res) => {
-          setTodos(res.data.todos);
-          page.current += 1;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
-    if (isGotAllTodos.current) {
-      window.removeEventListener("scroll", loadingTodosWhenScroll, true);
-      return;
-    }
-    window.addEventListener("scroll", loadingTodosWhenScroll, true);
-    return () => {
-      window.removeEventListener("scroll", loadingTodosWhenScroll, true);
-    };
-  }, [isLoading, userInfo?.id]);
+  }, [navigate, userInfo, reLoad, page]);
 
   return (
     <Root>
@@ -101,6 +61,7 @@ export const Today = () => {
       <div onClick={onClose}>
         <AddBtn />
       </div>
+      <PageNation pageNum={pageNum} page={page} setPage={setPage} />
     </Root>
   );
 };

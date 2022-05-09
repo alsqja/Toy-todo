@@ -1,43 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import styled from "styled-components";
-import { AddBtn } from "../../component/AddBtn";
-import { CreateTodoModal } from "../../component/CreateTodoModal";
+import { PageNation } from "../../component/Pagenation/Pagenation";
 import { SideBar } from "../../component/SideBar";
 import { TodoBox } from "../../component/TodoBox";
 import { userSelector } from "../../store/user";
-import { dummyTodos } from "../Total/data";
+import { ITodos } from "../Total/data";
 
 export const Done = () => {
   const userInfo = useRecoilValue(userSelector);
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  const [reLoad, setReLoad] = useState(false);
-
-  const onClose = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
+  const [todos, setTodos] = useState<ITodos[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageNum, setPageNum] = useState(0);
 
   useEffect(() => {
     if (!userInfo) {
       navigate("/signin");
     }
-  }, [navigate, userInfo]);
+    axios
+      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+        params: {
+          filter: "done",
+          page: page - 1,
+          is_done: true,
+          expiration_date: null,
+        },
+      })
+      .then((res) => {
+        setTodos(res.data.todos);
+        setPageNum(res.data.pageNum);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [navigate, page, userInfo]);
 
   return (
     <Root>
-      {isOpen && <CreateTodoModal onClose={onClose} setReLoad={setReLoad} />}
       <SideBar />
       <TodoContainer>
-        {dummyTodos.map((todo) => {
+        {todos.map((todo) => {
           return <TodoBox key={todo.id} todo={todo} />;
         })}
-        done
       </TodoContainer>
-      <div onClick={onClose}>
-        <AddBtn />
-      </div>
+      <PageNation pageNum={pageNum} page={page} setPage={setPage} />
     </Root>
   );
 };

@@ -17,7 +17,7 @@ export const TotalTodos = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [todos, setTodos] = useState<ITodos[]>([]);
   const [reLoad, setReLoad] = useState(false);
-  const isGotAllTodos = useRef(false);
+  const [isGotAllTodos, setIsGotAllTodos] = useState(false);
   const page = useRef(0);
 
   const onClose = useCallback(() => {
@@ -28,18 +28,18 @@ export const TotalTodos = () => {
     if (!userInfo) {
       navigate("/signin");
     }
+    setIsLoading(true);
     axios
       .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
         params: {
           filter: "all",
           page: 0,
-          is_done: false,
-          expiration_date: null,
         },
       })
       .then((res) => {
         setTodos(res.data);
         page.current = 1;
+        setIsLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -54,7 +54,7 @@ export const TotalTodos = () => {
       const { scrollTop } = document.documentElement;
       if (
         isLoading ||
-        isGotAllTodos.current ||
+        isGotAllTodos ||
         Math.round(scrollTop + innerHeight) <= scrollHeight
       ) {
         return;
@@ -69,11 +69,10 @@ export const TotalTodos = () => {
           },
         })
         .then((res) => {
-          console.log(res.data);
           if (res.data.length === 0) {
-            isGotAllTodos.current = true;
+            setIsGotAllTodos(true);
           } else {
-            setTodos([...todos, res.data]);
+            setTodos([...todos, ...res.data]);
             page.current += 1;
           }
         })
@@ -81,7 +80,7 @@ export const TotalTodos = () => {
           console.log(err);
         });
     };
-    if (isGotAllTodos.current) {
+    if (isGotAllTodos) {
       window.removeEventListener("scroll", loadingTodosWhenScroll, true);
       return;
     }
@@ -89,7 +88,7 @@ export const TotalTodos = () => {
     return () => {
       window.removeEventListener("scroll", loadingTodosWhenScroll, true);
     };
-  }, [isLoading, todos, userInfo?.id]);
+  }, [isGotAllTodos, isLoading, todos, userInfo?.id]);
 
   return (
     <Root>
@@ -103,6 +102,7 @@ export const TotalTodos = () => {
       <div onClick={onClose}>
         <AddBtn />
       </div>
+      {isGotAllTodos ? <GotAll>모든 TODO를 불러왔습니다.</GotAll> : ""}
     </Root>
   );
 };
@@ -117,4 +117,14 @@ const TodoContainer = styled.div`
   padding-top: 30px;
   display: grid;
   grid-template-columns: repeat(20, 1fr);
+`;
+
+const GotAll = styled.div`
+  width: 80%;
+  margin-left: 15%;
+  margin-top: 20px;
+  padding: 30px 0;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid black;
 `;
