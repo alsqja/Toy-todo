@@ -1,5 +1,11 @@
 import axios from "axios";
-import React, { Dispatch, SetStateAction, useCallback, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useRecoilValue } from "recoil";
 import styled, { keyframes } from "styled-components";
 import { userSelector } from "../../store/user";
@@ -8,7 +14,7 @@ import { todayMaker } from "../function/time";
 
 interface IProps {
   onClose: () => void;
-  setReLoad: Dispatch<SetStateAction<boolean>>;
+  setReLoad?: Dispatch<SetStateAction<boolean>>;
 }
 
 interface ITodoValues {
@@ -22,6 +28,18 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
     contents: "",
     expiration_date: "",
   });
+
+  useEffect(() => {
+    const modalESC = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keyup", modalESC);
+    return () => {
+      document.removeEventListener("keyup", modalESC);
+    };
+  }, [onClose]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +82,9 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
       })
       .then((res) => {
         onClose();
-        setReLoad(true);
+        if (setReLoad !== undefined) {
+          setReLoad(true);
+        }
       })
       .catch((err) => {
         console.log(err);

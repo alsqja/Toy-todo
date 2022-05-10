@@ -160,7 +160,7 @@ const StyledTodo = styled.div`
   margin: 10px 0;
   height: 65px;
   border-radius: 10px;
-  background-color: ${theme.palette.primary};
+  background-color: #c6996d8e;
   display: flex;
   align-items: center;
   cursor: pointer;

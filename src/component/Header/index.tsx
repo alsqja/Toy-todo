@@ -1,13 +1,14 @@
 import styled from "styled-components";
 import theme from "../../styled/theme";
 import { FaUserCircle } from "react-icons/fa";
-import { useRecoilState } from "recoil";
-import { userSelector } from "../../store/user";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { userSelector, userState } from "../../store/user";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
-  const [userInfo, setUserInfo] = useRecoilState(userSelector);
+  const [userInfo, setUserInfo] = useRecoilState(userState);
+  const setUser = useSetRecoilState(userSelector);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,6 +37,7 @@ export const Header = () => {
           <div
             onClick={() => {
               setUserInfo(null);
+              setUser(null);
               setIsOpen(false);
             }}
           >

@@ -5,24 +5,34 @@ export const { persistAtom } = recoilPersist();
 
 interface IUser {
   id: number;
-  email: string;
-  name: string;
 }
 
-const userState = atom<IUser | null>({
+interface IUserInfo {
+  id?: number;
+  email?: string;
+  name?: string;
+}
+
+const tokenState = atom<IUser | null>({
   default: null,
   key: "user/info",
   effects_UNSTABLE: [persistAtom],
 } as any);
 
 export const userSelector = selector<IUser | null>({
-  get: ({ get }) => get(userState),
+  get: ({ get }) => get(tokenState),
   set: ({ set, reset }, newValue) => {
     if (newValue instanceof DefaultValue || !newValue) {
-      reset(userState);
+      reset(tokenState);
     } else {
-      set(userState, newValue);
+      set(tokenState, newValue);
     }
   },
   key: "user/selector",
+});
+
+export const userState = atom<IUserInfo | null>({
+  default: null,
+  key: "user/user",
+  effects_UNSTABLE: [persistAtom],
 });

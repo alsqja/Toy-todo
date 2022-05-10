@@ -5,14 +5,17 @@ import theme from "../../styled/theme";
 import { ILoginValues } from "./index.d";
 import axios from "axios";
 import { useSetRecoilState } from "recoil";
-import { userSelector } from "../../store/user";
+import { userSelector, userState } from "../../store/user";
+// import { useLogin } from "../../hooks/session";
 
 export const Signin = () => {
   const [values, setValues] = useState<ILoginValues>({
     email: "",
     password: "",
   });
-  const setUserInfo = useSetRecoilState(userSelector);
+  // const [login, {called, data, loading, error}] = useLogin();
+  const setUser = useSetRecoilState(userSelector);
+  const setUserInfo = useSetRecoilState(userState);
   const navigate = useNavigate();
 
   const handleChange = useCallback(
@@ -36,6 +39,7 @@ export const Signin = () => {
         password: values.password,
       })
       .then((res) => {
+        setUser({ id: res.data.id });
         setUserInfo(res.data);
         navigate("/");
       })
@@ -46,7 +50,7 @@ export const Signin = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      LoginClickHandler();
+      // LoginClickHandler();
     }
   };
 

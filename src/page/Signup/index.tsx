@@ -38,7 +38,15 @@ export const Signup = () => {
   );
 
   const SignupClickHandler = () => {
-    // TODO : signup 요청
+    if (
+      !values.name ||
+      !values.email ||
+      !values.password ||
+      !values.checkpass
+    ) {
+      alert("필수 정보를 입력해주세요.");
+      return;
+    }
     axios
       .post("http://localhost:4000/auth/signup", {
         email: values.email,
@@ -162,7 +170,6 @@ const ValueInput = styled.input`
 `;
 
 const Warning = styled.div`
-  font-family: "IBMPlexSansKR-Light";
   font-size: smaller;
   font-weight: bolder;
   color: red;

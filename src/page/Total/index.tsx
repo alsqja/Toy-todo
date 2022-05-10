@@ -5,7 +5,9 @@ import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { AddBtn } from "../../component/AddBtn";
 import { CreateTodoModal } from "../../component/CreateTodoModal";
+import { Empty } from "../../component/Empty/Empty";
 import { SideBar } from "../../component/SideBar";
+import { Spinner } from "../../component/Spinner/Spinner";
 import { TodoBox } from "../../component/TodoBox";
 import { userSelector } from "../../store/user";
 import { ITodos } from "./data";
@@ -39,6 +41,7 @@ export const TotalTodos = () => {
       .then((res) => {
         setTodos(res.data);
         page.current = 1;
+        setIsGotAllTodos(false);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -59,6 +62,7 @@ export const TotalTodos = () => {
       ) {
         return;
       }
+      setIsLoading(true);
       axios
         .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
           params: {
@@ -69,12 +73,14 @@ export const TotalTodos = () => {
           },
         })
         .then((res) => {
-          if (res.data.length === 0) {
+          if (res.data.length < 15) {
+            setTodos([...todos, ...res.data]);
             setIsGotAllTodos(true);
           } else {
             setTodos([...todos, ...res.data]);
             page.current += 1;
           }
+          setIsLoading(false);
         })
         .catch((err) => {
           console.log(err);
@@ -90,6 +96,17 @@ export const TotalTodos = () => {
     };
   }, [isGotAllTodos, isLoading, todos, userInfo?.id]);
 
+  if (todos.length === 0 && !isLoading) {
+    return (
+      <Empty
+        isOpen={isOpen}
+        onOpen={() => setIsOpen(true)}
+        onClose={() => setIsOpen(false)}
+        setReLoad={setReLoad}
+      />
+    );
+  }
+
   return (
     <Root>
       {isOpen && <CreateTodoModal onClose={onClose} setReLoad={setReLoad} />}
@@ -98,6 +115,7 @@ export const TotalTodos = () => {
         {todos?.map((todo) => {
           return <TodoBox key={todo.id} todo={todo} />;
         })}
+        {isLoading ? <Spinner /> : ""}
       </TodoContainer>
       <div onClick={onClose}>
         <AddBtn />
