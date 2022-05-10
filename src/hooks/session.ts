@@ -19,9 +19,23 @@ export const useLogin = () => {
 
   const run = (email: string, password: string) => {
     return request({
-      url: "/signin",
+      url: "/auth/signin",
       method: "POST",
       data: { email, password },
+    });
+  };
+
+  return [run, response] as [typeof run, typeof response];
+};
+
+export const useSignup = () => {
+  const [request, response] = useAxios();
+
+  const run = (name: string, email: string, password: string) => {
+    return request({
+      url: "/auth/signup",
+      method: "POST",
+      data: { name, email, password },
     });
   };
 

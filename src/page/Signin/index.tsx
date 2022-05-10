@@ -1,19 +1,18 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { NavLink, useNavigate } from "react-router-dom";
 import theme from "../../styled/theme";
 import { ILoginValues } from "./index.d";
-import axios from "axios";
 import { useSetRecoilState } from "recoil";
 import { userSelector, userState } from "../../store/user";
-// import { useLogin } from "../../hooks/session";
+import { useLogin } from "../../hooks/session";
 
 export const Signin = () => {
   const [values, setValues] = useState<ILoginValues>({
     email: "",
     password: "",
   });
-  // const [login, {called, data, loading, error}] = useLogin();
+  const [login, { called, data, loading }] = useLogin();
   const setUser = useSetRecoilState(userSelector);
   const setUserInfo = useSetRecoilState(userState);
   const navigate = useNavigate();
@@ -31,26 +30,33 @@ export const Signin = () => {
     [values]
   );
 
-  const LoginClickHandler = () => {
-    // TODO : 로그인 요청 보내기
-    axios
-      .post("http://localhost:4000/auth/signin", {
-        email: values.email,
-        password: values.password,
-      })
-      .then((res) => {
-        setUser({ id: res.data.id });
-        setUserInfo(res.data);
-        navigate("/");
-      })
-      .catch((err) => {
-        alert(err.response.data);
-      });
-  };
+  const handleSubmit = useCallback(async () => {
+    if (loading) {
+      return;
+    }
+
+    try {
+      await login(values.email, values.password);
+    } catch (e: any) {
+      if (/[ㄱ-힣]/.test(e)) {
+        alert(e);
+      } else {
+        alert("로그인을 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    }
+  }, [loading, login, values]);
+
+  useEffect(() => {
+    if (called && data) {
+      setUser(data.id);
+      setUserInfo(data);
+      navigate("/");
+    }
+  }, [called, data, navigate, setUser, setUserInfo]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      // LoginClickHandler();
+      handleSubmit();
     }
   };
 
@@ -87,7 +93,7 @@ export const Signin = () => {
           <NavLink to="/signup">
             <StyledButton>회원가입</StyledButton>
           </NavLink>
-          <StyledButton onClick={LoginClickHandler}>로그인</StyledButton>
+          <StyledButton onClick={handleSubmit}>로그인</StyledButton>
         </ButtonBox>
       </Body>
     </LoginContainer>

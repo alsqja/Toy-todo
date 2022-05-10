@@ -30,7 +30,7 @@ export const useAxios = (): UseAxiosType => {
   const request = useCallback(
     async (config?: AxiosRequestConfig) => {
       setCalled(false);
-      setLoading(false);
+      setLoading(true);
       setData(false);
       setError(undefined);
 

@@ -1,7 +1,7 @@
-import axios from "axios";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useSignup } from "../../hooks/session";
 import theme from "../../styled/theme";
 import { ISignUpValues } from "./index.d";
 
@@ -13,7 +13,7 @@ export const Signup = () => {
     checkpass: "",
   });
   const [isCheck, setIsCheck] = useState(true);
-  // const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [register, { called, data, loading }] = useSignup();
   const navigate = useNavigate();
 
   const handleChange = useCallback(
@@ -37,7 +37,7 @@ export const Signup = () => {
     [values]
   );
 
-  const SignupClickHandler = () => {
+  const handleSubmit = useCallback(async () => {
     if (
       !values.name ||
       !values.email ||
@@ -47,20 +47,31 @@ export const Signup = () => {
       alert("필수 정보를 입력해주세요.");
       return;
     }
-    axios
-      .post("http://localhost:4000/auth/signup", {
-        email: values.email,
-        name: values.name,
-        password: values.password,
-      })
-      .then((res) => {
-        alert("회원가입이 완료되었습니다.");
-        navigate("/signin");
-      })
-      .catch((err) => {
-        alert(err.response.data);
-      });
-  };
+    if (loading) return;
+
+    try {
+      await register(values.name, values.email, values.password);
+    } catch (e: any) {
+      if (/[ㄱ-힣]/.test(e)) {
+        alert(e);
+      } else {
+        alert("로그인을 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    }
+  }, [
+    loading,
+    register,
+    values.checkpass,
+    values.email,
+    values.name,
+    values.password,
+  ]);
+
+  useEffect(() => {
+    if (called && data) {
+      navigate("/signin");
+    }
+  }, [called, navigate, data]);
 
   return (
     <SignupContainer>
@@ -123,7 +134,7 @@ export const Signup = () => {
           >
             뒤로
           </StyledButton>
-          <StyledButton onClick={SignupClickHandler}>회원가입</StyledButton>
+          <StyledButton onClick={handleSubmit}>회원가입</StyledButton>
         </ButtonBox>
       </Body>
     </SignupContainer>
