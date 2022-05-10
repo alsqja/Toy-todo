@@ -35,7 +35,7 @@ export const Today = () => {
     const today = todayMaker();
     setIsLoading(true);
     axios
-      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+      .get(`http://localhost:4000/todo/user/${userInfo}`, {
         params: {
           filter: "today",
           page: page - 1,

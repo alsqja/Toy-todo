@@ -76,7 +76,7 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
       return;
     }
     axios
-      .post(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+      .post(`http://localhost:4000/todo/user/${userInfo}`, {
         contents: values.contents,
         expiration_date: values.expiration_date,
       })
@@ -89,13 +89,7 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [
-    onClose,
-    setReLoad,
-    userInfo?.id,
-    values.contents,
-    values.expiration_date,
-  ]);
+  }, [onClose, setReLoad, userInfo, values.contents, values.expiration_date]);
 
   return (
     <ModalBackdrop onClick={onClose}>

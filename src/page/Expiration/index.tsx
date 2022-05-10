@@ -25,7 +25,7 @@ export const Expiration = () => {
     }
     setIsLoading(true);
     axios
-      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+      .get(`http://localhost:4000/todo/user/${userInfo}`, {
         params: {
           filter: "expirated",
           page: page - 1,

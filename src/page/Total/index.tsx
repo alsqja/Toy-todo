@@ -32,7 +32,7 @@ export const TotalTodos = () => {
     }
     setIsLoading(true);
     axios
-      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+      .get(`http://localhost:4000/todo/user/${userInfo}`, {
         params: {
           filter: "all",
           page: 0,
@@ -64,7 +64,7 @@ export const TotalTodos = () => {
       }
       setIsLoading(true);
       axios
-        .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+        .get(`http://localhost:4000/todo/user/${userInfo}`, {
           params: {
             filter: "all",
             page: page.current,
@@ -94,7 +94,7 @@ export const TotalTodos = () => {
     return () => {
       window.removeEventListener("scroll", loadingTodosWhenScroll, true);
     };
-  }, [isGotAllTodos, isLoading, todos, userInfo?.id]);
+  }, [isGotAllTodos, isLoading, todos, userInfo]);
 
   if (todos.length === 0 && !isLoading) {
     return (

@@ -25,7 +25,7 @@ export const Done = () => {
     }
     setIsLoading(true);
     axios
-      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
+      .get(`http://localhost:4000/todo/user/${userInfo}`, {
         params: {
           filter: "done",
           page: page - 1,

@@ -21,7 +21,7 @@ export const Mypage = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:4000/user/${userInfo?.id}/data`)
+      .get(`http://localhost:4000/user/${userInfo}/data`)
       .then((res) => {
         const op = [];
         for (let key in res.data) {
@@ -35,7 +35,7 @@ export const Mypage = () => {
       .catch((err) => {
         console.log(err.response);
       });
-  }, [userInfo?.id]);
+  }, [userInfo]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelected(e.target.value);

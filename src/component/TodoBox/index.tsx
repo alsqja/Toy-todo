@@ -25,7 +25,7 @@ export const TodoBox = ({ todo }: IProps) => {
       return;
     }
     axios
-      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`, {
+      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo}`, {
         contents: "",
         expiration_date: "",
         is_done: !valuse.is_done,
@@ -36,7 +36,7 @@ export const TodoBox = ({ todo }: IProps) => {
       .catch((err) => {
         console.log(err);
       });
-  }, [isDead, userInfo?.id, valuse]);
+  }, [isDead, userInfo, valuse]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +57,7 @@ export const TodoBox = ({ todo }: IProps) => {
     (e: React.MouseEvent<SVGAElement>) => {
       e.stopPropagation();
       axios
-        .delete(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`)
+        .delete(`http://localhost:4000/todo/${valuse.id}/user/${userInfo}`)
         .then((res) => {
           window.location.reload();
         })
@@ -65,12 +65,12 @@ export const TodoBox = ({ todo }: IProps) => {
           console.log(err);
         });
     },
-    [userInfo?.id, valuse.id]
+    [userInfo, valuse.id]
   );
 
   const handleEdit = useCallback(() => {
     axios
-      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`, {
+      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo}`, {
         contents: valuse.contents,
         expiration_date: valuse.expiration_date,
         is_done: valuse.is_done,
@@ -84,7 +84,7 @@ export const TodoBox = ({ todo }: IProps) => {
         console.log(err);
       });
   }, [
-    userInfo?.id,
+    userInfo,
     valuse.contents,
     valuse.expiration_date,
     valuse.id,

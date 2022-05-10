@@ -50,14 +50,14 @@ export const UserModal = ({ onClose }: IProps) => {
       navigate("/signin");
     }
     axios
-      .get(`http://localhost:4000/user/${userInfo?.id}`)
+      .get(`http://localhost:4000/user/${userInfo}`)
       .then((res) => {
         setValues({ ...res.data });
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [navigate, userInfo, userInfo?.id]);
+  }, [navigate, userInfo, userInfo]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,7 @@ export const UserModal = ({ onClose }: IProps) => {
 
   const handleSubmit = useCallback(() => {
     axios
-      .put(`http://localhost:4000/user/${userInfo?.id}`, {
+      .put(`http://localhost:4000/user/${userInfo}`, {
         name: values.name,
         old_password: values.old_password,
         password: values.password,
