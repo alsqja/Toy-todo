@@ -50,14 +50,14 @@ export const UserModal = ({ onClose }: IProps) => {
       navigate("/signin");
     }
     axios
-      .get(`http://localhost:4000/user/${userInfo}`)
+      .get(`http://localhost:4000/user/${userInfo?.id}`)
       .then((res) => {
         setValues({ ...res.data });
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [navigate, userInfo, userInfo]);
+  }, [navigate, userInfo]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
