@@ -94,6 +94,7 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
     }
   }, [called, data, onClose, setReLoad]);
 
+
   return (
     <ModalBackdrop onClick={onClose}>
       <ModalView onClick={(e) => e.stopPropagation()}>
