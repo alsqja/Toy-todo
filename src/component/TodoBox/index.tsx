@@ -44,6 +44,7 @@ export const TodoBox = ({ todo }: IProps) => {
     }
   }, [editReq, editRes.loading, isDead, valuse.id, valuse.is_done]);
 
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name } = e.target;

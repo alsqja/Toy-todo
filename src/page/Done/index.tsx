@@ -36,6 +36,7 @@ export const Done = () => {
     }
   }, [result.data, result.error, result.loading]);
 
+
   if (todos.length === 0 && page === 1 && !result.loading) {
     return <Empty />;
   }
