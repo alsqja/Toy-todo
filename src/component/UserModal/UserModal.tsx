@@ -99,15 +99,13 @@ export const UserModal = ({ onClose }: IProps) => {
 
   return (
     <ModalBackdrop onClick={onClose}>
-      {isOpen ? (
+      {isOpen && (
         <WithdrawalModal
           onClose={(e) => {
             e.stopPropagation();
             setIsOpen(false);
           }}
         />
-      ) : (
-        ""
       )}
       <ModalView onClick={(e) => e.stopPropagation()}>
         <div className="close_btn" onClick={onClose}>

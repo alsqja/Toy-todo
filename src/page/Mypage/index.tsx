@@ -41,7 +41,7 @@ export const Mypage = () => {
   return (
     <Root>
       <SideBar />
-      {isOpen ? <UserModal onClose={() => setIsOpen(false)} /> : ""}
+      {isOpen && <UserModal onClose={() => setIsOpen(false)} />}
       <TodoContainer>
         <SelectContainer>
           <Selector onChange={handleChange}>

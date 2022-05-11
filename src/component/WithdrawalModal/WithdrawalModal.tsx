@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { AiOutlineClose } from "react-icons/ai";
 import { useLogout } from "../../hooks/session";
 import { useDeleteUser } from "../../hooks/user";
@@ -81,6 +81,11 @@ export const WithdrawalModal = ({ onClose }: Iprop) => {
   );
 };
 
+const fadeIn = keyframes`
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+`;
+
 const ModalBackdrop = styled.div`
   position: fixed;
   z-index: 999;
@@ -88,7 +93,8 @@ const ModalBackdrop = styled.div`
   left: 0;
   bottom: 0;
   right: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+  animation: 200ms ${fadeIn} linear;
+  background-color: rgba(0, 0, 0, 0.5);
   display: grid;
   place-items: center;
 `;
