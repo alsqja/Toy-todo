@@ -1,11 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { AiOutlineClose } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useRecoilValue } from "recoil";
-import { userSelector } from "../../store/user";
 import { useLogout } from "../../hooks/session";
+import { useDeleteUser } from "../../hooks/user";
 
 interface Iprop {
   [index: string]: (e: any) => void;
@@ -13,8 +10,8 @@ interface Iprop {
 
 export const WithdrawalModal = ({ onClose }: Iprop) => {
   const [password, setPassword] = useState("");
-  const user = useRecoilValue(userSelector);
   const logout = useLogout();
+  const [request, result] = useDeleteUser();
 
   const PasswordHandler = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,8 +19,6 @@ export const WithdrawalModal = ({ onClose }: Iprop) => {
     },
     []
   );
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const modalESC = (e: KeyboardEvent) => {
@@ -39,20 +34,17 @@ export const WithdrawalModal = ({ onClose }: Iprop) => {
 
   const handleClick = useCallback(() => {
     if (password !== "회원탈퇴") {
-      console.log(password);
       alert("정확히 입력해주세요.");
       return;
     }
-    axios
-      .delete(`http://localhost:4000/user/${user?.id}`)
-      .then((res) => {
-        logout();
-        navigate("/signin");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [logout, navigate, password, user?.id]);
+    request();
+  }, [password, request]);
+
+  useEffect(() => {
+    if (result.called) {
+      logout();
+    }
+  });
 
   return (
     <ModalBackdrop onClick={(e) => onClose(e)}>

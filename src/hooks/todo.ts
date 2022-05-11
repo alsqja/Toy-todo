@@ -28,3 +28,68 @@ export const useTodoList = () => {
 
   return [run, response] as [typeof run, typeof response];
 };
+
+export const usePostTodo = () => {
+  const user_id = useRecoilValue(userSelector);
+  const [request, response] = useAxios();
+
+  const run = useCallback(
+    (contents: string, expiration_date: string) => {
+      return request({
+        url: `/todo/user/${user_id}`,
+        method: "POST",
+        data: {
+          contents,
+          expiration_date,
+        },
+      });
+    },
+    [request, user_id]
+  );
+
+  return [run, response] as [typeof run, typeof response];
+};
+
+export const useEditTodo = () => {
+  const user_id = useRecoilValue(userSelector);
+  const [request, response] = useAxios();
+
+  const run = useCallback(
+    (
+      id: number,
+      contents: string,
+      expiration_date: string,
+      is_done: boolean
+    ) => {
+      return request({
+        url: `/todo/${id}/user/${user_id}`,
+        method: "PUT",
+        data: {
+          contents,
+          expiration_date,
+          is_done,
+        },
+      });
+    },
+    [request, user_id]
+  );
+
+  return [run, response] as [typeof run, typeof response];
+};
+
+export const useDeleteTodo = () => {
+  const user_id = useRecoilValue(userSelector);
+  const [request, response] = useAxios();
+
+  const run = useCallback(
+    (id: number) => {
+      return request({
+        url: `/todo/${id}/user/${user_id}`,
+        method: "DELETE",
+      });
+    },
+    [request, user_id]
+  );
+
+  return [run, response] as [typeof run, typeof response];
+};

@@ -2,11 +2,9 @@ import { SideBar } from "../../component/SideBar";
 import styled from "styled-components";
 import Chart from "../../component/Chart/Chart";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useRecoilValue } from "recoil";
-import { userSelector } from "../../store/user";
 import theme from "../../styled/theme";
 import { UserModal } from "../../component/UserModal/UserModal";
+import { useUserData } from "../../hooks/user";
 
 interface IOptions {
   name: string;
@@ -14,28 +12,27 @@ interface IOptions {
 }
 
 export const Mypage = () => {
-  const userInfo = useRecoilValue(userSelector);
+  const [request, result] = useUserData();
   const [options, setOptions] = useState<IOptions[]>([]);
   const [selected, setSelected] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:4000/user/${userInfo?.id}/data`)
-      .then((res) => {
-        const op = [];
-        for (let key in res.data) {
-          op.push({
-            name: key,
-            count: res.data[key],
-          });
-        }
-        setOptions(op);
-      })
-      .catch((err) => {
-        console.log(err.response);
-      });
-  }, [userInfo?.id]);
+    request();
+  }, [request]);
+
+  useEffect(() => {
+    if (result.data && result.called) {
+      const op = [];
+      for (let key in result.data) {
+        op.push({
+          name: key,
+          count: result.data[key],
+        });
+      }
+      setOptions(op);
+    }
+  }, [result.called, result.data]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelected(e.target.value);

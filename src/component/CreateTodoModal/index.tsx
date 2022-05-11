@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, {
   Dispatch,
   SetStateAction,
@@ -6,9 +5,8 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { useRecoilValue } from "recoil";
 import styled, { keyframes } from "styled-components";
-import { userSelector } from "../../store/user";
+import { usePostTodo } from "../../hooks/todo";
 import theme from "../../styled/theme";
 import { todayMaker } from "../function/time";
 
@@ -23,11 +21,11 @@ interface ITodoValues {
 }
 
 export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
-  const userInfo = useRecoilValue(userSelector);
   const [values, setValues] = useState<ITodoValues>({
     contents: "",
     expiration_date: "",
   });
+  const [request, { called, data, loading }] = usePostTodo();
 
   useEffect(() => {
     const modalESC = (e: KeyboardEvent) => {
@@ -66,31 +64,35 @@ export const CreateTodoModal = ({ onClose, setReLoad }: IProps) => {
     [values]
   );
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
+    if (loading) {
+      return;
+    }
     if (values.contents === "") {
-      alert("내용을 입력해 주세요.");
+      alert("내용을 입력해주세요.");
+      return;
+    }
+    if (values.contents === "") {
+      alert("마감일을 설정해주세요.");
       return;
     }
     if (+values.expiration_date < +new Date(todayMaker()).getTime()) {
       alert("마감일은 오늘 이후로 설정할 수 있습니다.");
       return;
     }
-    axios
-      .post(`http://localhost:4000/todo/user/${userInfo}`, {
-        contents: values.contents,
-        expiration_date: values.expiration_date,
-      })
-      .then((res) => {
-        onClose();
-        // if (setReLoad !== undefined) {
-        //   setReLoad(true);
-        // }
-        window.location.reload();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [onClose, setReLoad, userInfo, values.contents, values.expiration_date]);
+
+    try {
+      await request(values.contents, values.expiration_date);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [loading, request, values.contents, values.expiration_date]);
+
+  useEffect(() => {
+    if (data && called) {
+      window.location.reload();
+    }
+  }, [called, data, onClose, setReLoad]);
 
   return (
     <ModalBackdrop onClick={onClose}>

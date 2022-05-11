@@ -1,10 +1,8 @@
-import axios from "axios";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { useRecoilValue } from "recoil";
 import styled from "styled-components";
+import { useDeleteTodo, useEditTodo } from "../../hooks/todo";
 import { ITodos } from "../../page/Total/data";
-import { userSelector } from "../../store/user";
 import theme from "../../styled/theme";
 import { todayMaker } from "../function/time";
 
@@ -13,30 +11,38 @@ interface IProps {
 }
 
 export const TodoBox = ({ todo }: IProps) => {
-  const userInfo = useRecoilValue(userSelector);
   const [valuse, setValuse] = useState<ITodos>(todo);
   const isDead = +valuse.expiration_date < new Date(todayMaker()).getTime();
   const [isHover, setIsHover] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [editReq, editRes] = useEditTodo();
+  const [deleteReq, deleteRes] = useDeleteTodo();
 
-  const handleClick = useCallback(() => {
+  useEffect(() => {
+    if (editRes.data && editRes.called) {
+      if (!editRes.data.contents) {
+        setValuse({ ...valuse, is_done: !valuse.is_done });
+      } else {
+        setIsOpen(false);
+        setValuse(editRes.data);
+      }
+    }
+  }, [editRes.called, editRes.data, valuse]);
+
+  const handleClick = useCallback(async () => {
+    if (editRes.loading) return;
+
     if (isDead) {
       alert("만료된 TODO는 수정할 수 없습니다.");
       return;
     }
-    axios
-      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`, {
-        contents: "",
-        expiration_date: "",
-        is_done: !valuse.is_done,
-      })
-      .then((res) => {
-        setValuse({ ...valuse, is_done: !valuse.is_done });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [isDead, userInfo?.id, valuse]);
+
+    try {
+      await editReq(valuse.id, "", "", !valuse.is_done);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [editReq, editRes.loading, isDead, valuse.id, valuse.is_done]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +51,6 @@ export const TodoBox = ({ todo }: IProps) => {
 
       if (name === "expiration_date") {
         value = new Date(value).getTime().toString();
-        console.log(todayMaker(value));
       }
 
       setValuse({ ...valuse, [name]: value });
@@ -56,35 +61,33 @@ export const TodoBox = ({ todo }: IProps) => {
   const handleDelete = useCallback(
     (e: React.MouseEvent<SVGAElement>) => {
       e.stopPropagation();
-      axios
-        .delete(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`)
-        .then((res) => {
-          window.location.reload();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      deleteReq(valuse.id);
     },
-    [userInfo?.id, valuse.id]
+    [deleteReq, valuse.id]
   );
 
-  const handleEdit = useCallback(() => {
-    axios
-      .put(`http://localhost:4000/todo/${valuse.id}/user/${userInfo?.id}`, {
-        contents: valuse.contents,
-        expiration_date: valuse.expiration_date,
-        is_done: valuse.is_done,
-      })
-      .then((res) => {
-        console.log(res);
-        setValuse(res.data);
-        setIsOpen(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  useEffect(() => {
+    if (deleteRes.called) {
+      window.location.reload();
+    }
+  }, [deleteRes.called]);
+
+  const handleEdit = useCallback(async () => {
+    if (editRes.loading) return;
+
+    try {
+      await editReq(
+        valuse.id,
+        valuse.contents,
+        valuse.expiration_date,
+        valuse.is_done
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }, [
-    userInfo?.id,
+    editReq,
+    editRes.loading,
     valuse.contents,
     valuse.expiration_date,
     valuse.id,

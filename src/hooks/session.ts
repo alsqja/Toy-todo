@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { userSelector, userState } from "../store/user";
 import { useAxios } from "./axios";
@@ -5,8 +6,10 @@ import { useAxios } from "./axios";
 export const useLogout = () => {
   const setUserInfo = useSetRecoilState(userState);
   const setUser = useSetRecoilState(userSelector);
+  const navigate = useNavigate();
 
   const logout = () => {
+    navigate("/signin");
     setUser(null);
     setUserInfo(null);
   };

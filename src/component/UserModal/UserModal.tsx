@@ -1,8 +1,7 @@
-import axios from "axios";
 import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import styled, { keyframes } from "styled-components";
+import { useEditUser, useUser } from "../../hooks/user";
 import { userState } from "../../store/user";
 import theme from "../../styled/theme";
 import { WithdrawalModal } from "../WithdrawalModal/WithdrawalModal";
@@ -31,7 +30,8 @@ export const UserModal = ({ onClose }: IProps) => {
     checkPass: "",
   });
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
+  const [getUserReq, getUserRes] = useUser();
+  const [editUserReq, editUserRes] = useEditUser();
 
   useEffect(() => {
     const modalESC = (e: KeyboardEvent) => {
@@ -46,18 +46,14 @@ export const UserModal = ({ onClose }: IProps) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/signin");
+    getUserReq();
+  }, [getUserReq]);
+
+  useEffect(() => {
+    if (getUserRes.data && getUserRes.called) {
+      setValues(getUserRes.data);
     }
-    axios
-      .get(`http://localhost:4000/user/${userInfo?.id}`)
-      .then((res) => {
-        setValues({ ...res.data });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [navigate, userInfo, userInfo?.id]);
+  }, [getUserRes.called, getUserRes.data]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,32 +65,37 @@ export const UserModal = ({ onClose }: IProps) => {
     [values]
   );
 
-  const handleSubmit = useCallback(() => {
-    axios
-      .put(`http://localhost:4000/user/${userInfo?.id}`, {
-        name: values.name,
-        old_password: values.old_password,
-        password: values.password,
-      })
-      .then((res) => {
-        setUserInfo({
-          ...userInfo,
-          name: values.name,
-        });
-        alert("회원정보 변경이 완료되었습니다.");
-        onClose();
-      })
-      .catch((err) => {
-        alert(err.response.data);
-      });
+  const handleSubmit = useCallback(async () => {
+    if (editUserRes.loading) return;
+
+    try {
+      editUserReq(values.name, values.old_password, values.password);
+    } catch (e: any) {
+      if (/[ㄱ-힣]/.test(e)) {
+        alert(e);
+      } else {
+        console.log(e);
+        alert("회원정보 변경을 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
+    }
   }, [
-    onClose,
-    setUserInfo,
-    userInfo,
+    editUserReq,
+    editUserRes.loading,
     values.name,
     values.old_password,
     values.password,
   ]);
+
+  useEffect(() => {
+    if (editUserRes.data && editUserRes.called) {
+      setUserInfo({
+        ...userInfo,
+        name: values.name,
+      });
+      alert("회원정보 변경이 완료되었습니다.");
+      onClose();
+    }
+  });
 
   return (
     <ModalBackdrop onClick={onClose}>

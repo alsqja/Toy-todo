@@ -1,7 +1,4 @@
-import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { AddBtn } from "../../component/AddBtn";
 import { CreateTodoModal } from "../../component/CreateTodoModal";
@@ -11,70 +8,63 @@ import { PageNation } from "../../component/Pagenation/Pagenation";
 import { SideBar } from "../../component/SideBar";
 import { Spinner } from "../../component/Spinner/Spinner";
 import { TodoBox } from "../../component/TodoBox";
-import { userSelector } from "../../store/user";
+import { useTodoList } from "../../hooks/todo";
 import { ITodos } from "../Total/data";
 
 export const Today = () => {
-  const userInfo = useRecoilValue(userSelector);
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [todos, setTodos] = useState<ITodos[]>([]);
-  const [reLoad, setReLoad] = useState(false);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [pageNum, setPageNum] = useState(0);
+  const [request, result] = useTodoList();
 
   const onClose = useCallback(() => {
     setIsOpen(!isOpen);
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!userInfo) {
-      navigate("/signin");
-    }
-    const today = todayMaker();
-    setIsLoading(true);
-    axios
-      .get(`http://localhost:4000/todo/user/${userInfo?.id}`, {
-        params: {
-          filter: "today",
-          page: page - 1,
-          is_done: false,
-          expiration_date: new Date(today).getTime().toString(),
-        },
-      })
-      .then((res) => {
-        setTodos(res.data.todos);
-        setPageNum(res.data.pageNum);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    setReLoad(false);
-  }, [navigate, userInfo, reLoad, page]);
+  const requestQuery = useCallback(() => {
+    request({
+      filter: "today",
+      page: page - 1,
+      expiration_date: new Date(todayMaker()).getTime().toString(),
+    });
+  }, [page, request]);
 
-  if (todos.length === 0 && page === 1 && !isLoading) {
+  useEffect(() => {
+    requestQuery();
+  }, [requestQuery]);
+
+  useEffect(() => {
+    if (!result.loading && result.error) {
+      console.log(result.error);
+      return;
+    }
+    if (result.data) {
+      setTodos(result.data.todos);
+      setPageNum(result.data.pageNum);
+    }
+  }, [result.data, result.error, result.loading]);
+
+  if (todos.length === 0 && page === 1 && !result.loading) {
     return (
       <Empty
         isOpen={isOpen}
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
-        setReLoad={setReLoad}
       />
     );
   }
 
   return (
     <Root>
-      {isOpen && <CreateTodoModal onClose={onClose} setReLoad={setReLoad} />}
+      {isOpen && <CreateTodoModal onClose={onClose} />}
       <SideBar />
       <TodoContainer>
-        {!isLoading &&
+        {!result.loading &&
           todos.map((todo) => {
             return <TodoBox key={todo.id} todo={todo} />;
           })}
-        {isLoading ? <Spinner /> : ""}
+        {result.loading ? <Spinner /> : ""}
       </TodoContainer>
       <div onClick={onClose}>
         <AddBtn />

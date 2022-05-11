@@ -13,13 +13,12 @@ export const TotalTodos = () => {
   const [request, result] = useTodoList();
   const [isOpen, setIsOpen] = useState(false);
   const [todos, setTodos] = useState<ITodos[]>([]);
-  const [reLoad, setReLoad] = useState(false);
   const [isGotAllTodos, setIsGotAllTodos] = useState(false);
   const page = useRef(0);
 
   const onClose = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
+    setIsOpen(false);
+  }, []);
 
   const requestQuery = useCallback(() => {
     request({
@@ -30,28 +29,21 @@ export const TotalTodos = () => {
 
   useEffect(() => {
     requestQuery();
-  }, [reLoad, requestQuery]);
+  }, [requestQuery]);
 
   useEffect(() => {
-    if (!result?.loading && result.error) {
-      alert(result.error);
+    if (!result.loading && result.error) {
+      console.log(result.error);
       return;
     }
-    if (result.data) {
-      if (
-        (todos.length > 0 &&
-          result.data[result.data.length - 1].id !==
-            todos[todos.length - 1].id) ||
-        todos.length === 0
-      ) {
-        setTodos([...todos, ...result.data]);
-        page.current += 1;
-      }
-      if (result.data.length < 15) {
+    if (result.data && result.called) {
+      setTodos(result.data);
+      page.current = Math.floor(result.data.length / 15);
+      if (result.data.length % 15 !== 0) {
         setIsGotAllTodos(true);
       }
     }
-  }, [result, todos]);
+  }, [result.data, result.called, result.error, result.loading]);
 
   useEffect(() => {
     const loadingTodosWhenScroll = () => {
@@ -83,14 +75,13 @@ export const TotalTodos = () => {
         isOpen={isOpen}
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
-        setReLoad={setReLoad}
       />
     );
   }
 
   return (
     <Root>
-      {isOpen && <CreateTodoModal onClose={onClose} setReLoad={setReLoad} />}
+      {isOpen && <CreateTodoModal onClose={onClose} />}
       <SideBar />
       <TodoContainer>
         {todos?.map((todo) => {
